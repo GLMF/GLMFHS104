@@ -1,0 +1,73 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: email-secret
+type: Opaque
+data:
+  apikey: Y2VjaSBlc3QgdW5lIEFQSUtleSBzdXBlciBzZWNyw6h0ZQ==
+  domain: Y2VjaSBlc3QgdW4gZG9tYWluIHN1cGVyIHNlY3JldA==
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: email-cm
+data:
+  recipient: "microft.holmes@example.com"
+  sender: "notification@example.com"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: email-deployment
+  labels:
+    app: email
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: email
+  template:
+    metadata:
+      labels:
+        app: email
+    spec:
+      containers:
+      - name: email
+        image: jblaskowich/hs-micro-email:v0.1.1
+        env:
+          - name: NATSURL
+            valueFrom:
+              configMapKeyRef:
+                name: nats-cm
+                key: natsurl
+          - name: NATSPORT
+            valueFrom:
+              configMapKeyRef:
+                name: nats-cm
+                key: natsport
+          - name: NATSPOST
+            valueFrom:
+              configMapKeyRef:
+                name: nats-cm
+                key: natspost
+          - name: RECIPIENT
+            valueFrom:
+              configMapKeyRef:
+                name: email-cm
+                key: recipient
+          - name: SENDER 
+            valueFrom:
+              configMapKeyRef:
+                name: email-cm
+                key: sender
+          - name: APIKEY
+            valueFrom:
+              secretKeyRef:
+                name: email-secret
+                key: apikey
+          - name: DOMAIN
+            valueFrom:
+              secretKeyRef:
+                name: email-secret
+                key: domain

@@ -1,0 +1,49 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-initdb-config
+data:
+  initdb.sql: |
+    CREATE TABLE `post`(
+      `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+      `post_title` varchar(64) DEFAULT NULL,
+      `post_content` mediumtext,
+      `post_date` timestamp NULL DEFAULT NULL,
+      PRIMARY KEY (`id`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: database-cm
+data:
+  dbhost: mariadb-svc
+  dbport: ":3306"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nats-cm
+data:
+  natsurl: nats-svc
+  natsport: ":4222"
+  natspost: xxxpost
+  natsget: xxxget
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mariadb-cm
+data:
+  mysql_database: blowofmouth
+  mysql_random_root_password: "true"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mariadb-secret
+type: Opaque
+data:
+  dbuser: dXNlcg==
+  dbpassword: cGFzc3dvcmQ=

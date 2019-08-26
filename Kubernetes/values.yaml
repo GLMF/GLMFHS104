@@ -1,0 +1,31 @@
+mariadb:
+  debug: false
+
+  # general cluster parameters
+  cluster:
+    id: 1
+    topology: masterslave
+    labels: app=mariadb-test
+
+  # server parameters
+  server:
+    users:
+      admin:
+        username: admin
+        password: 5LVTpbGE2cGFtw69
+      replication:
+        username: repl
+        password: 5LVTpbGE2cGFtw69
+    storage:
+      class: "rook-ceph-block"
+      size: 2Gi
+    replicas: 3
+    image: mariadb/server:10.4
+    port: 3306
+    resources:
+      requests:
+        cpu: 100m
+        memory: 100Mi
+      limits:
+        cpu: 200m
+        memory: 400Mi

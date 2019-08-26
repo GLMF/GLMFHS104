@@ -1,0 +1,66 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+  labels:
+    app: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: jblaskowich/hs-micro-back:v0.1.2
+        env:
+          - name: NATSURL
+            valueFrom:
+              configMapKeyRef:
+                name: nats-cm
+                key: natsurl
+          - name: NATSPORT
+            valueFrom:
+              configMapKeyRef:
+                name: nats-cm
+                key: natsport
+          - name: NATSPOST
+            valueFrom:
+              configMapKeyRef:
+                name: nats-cm
+                key: natspost
+          - name: NATSGET
+            valueFrom:
+              configMapKeyRef:
+                name: nats-cm
+                key: natsget
+          - name: DBHOST 
+            valueFrom:
+              configMapKeyRef:
+                name: database-cm
+                key: dbhost
+          - name: DBPORT
+            valueFrom:
+              configMapKeyRef:
+                name: database-cm
+                key: dbport
+          - name: DBBASE
+            valueFrom:
+              configMapKeyRef:
+                name: mariadb-cm
+                key: mysql_database
+          - name: DBUSER
+            valueFrom:
+              secretKeyRef:
+                name: mariadb-secret
+                key: dbuser
+          - name: DBPASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mariadb-secret
+                key: dbpassword

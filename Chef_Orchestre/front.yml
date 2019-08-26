@@ -1,0 +1,101 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-cm
+data:
+  natsurl: nats-svc
+  natsport: ":4222"
+  natspost: xxxpost
+  natsget: xxxget
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+  labels:
+    app: frontend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: jblaskowich/hs-micro-front:v0.1.4
+        resources:
+          requests:
+           cpu: 100m
+        env:
+          - name: NATSURL
+            valueFrom:
+              configMapKeyRef:
+                name: nats-cm
+                key: natsurl
+          - name: NATSPORT
+            valueFrom:
+              configMapKeyRef:
+                name: nats-cm
+                key: natsport
+          - name: NATSPOST
+            valueFrom:
+              configMapKeyRef:
+                name: nats-cm
+                key: natspost
+          - name: NATSGET
+            valueFrom:
+              configMapKeyRef:
+                name: nats-cm
+                key: natsget
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-svc
+  labels:
+    app: frontend-svc
+spec:
+  ports:
+  - port: 8080
+    targetPort: 8080
+  type: ClusterIP
+  selector:
+    app: frontend
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: frontend-ingress
+spec:
+  rules:
+  - host: 192.168.99.130.xip.io
+    http:
+      paths:
+      - backend:
+          serviceName: frontend-svc
+          servicePort: 8080
+---
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: frontend-hpa
+  namespace: default
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: frontend-deployment
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource: 
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
